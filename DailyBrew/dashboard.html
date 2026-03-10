@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DailyBrew - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/dist/fullcalendar.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-mug-hot"></i>
+                    <h2>DailyBrew</h2>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-view="calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendar</span>
+                </div>
+                <div class="nav-item" data-view="tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tasks</span>
+                </div>
+                <div class="nav-item" data-view="schedule">
+                    <i class="fas fa-clock"></i>
+                    <span>My Schedule</span>
+                </div>
+                <div class="nav-item" data-view="ai">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Scheduler</span>
+                </div>
+                <div class="nav-item" data-view="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">U</div>
+                    <div class="user-details">
+                        <div class="user-name" id="userName">User</div>
+                        <div class="user-email">Student</div>
+                    </div>
+                    <button class="btn btn-sm" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Calendar View -->
+            <div id="calendarView" class="view-section">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Calendar</h1>
+                        <p class="page-subtitle">View your schedule and study blocks</p>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-primary" onclick="openTaskModal()">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                        <button class="btn btn-success" onclick="generateStudyBlocks()">
+                            <i class="fas fa-magic"></i> Generate Blocks
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button onclick="calendar.prev()"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="calendar.today()">Today</button>
+                            <button onclick="calendar.next()"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                        <h3 class="calendar-title" id="calendarTitle"></h3>
+                        <div class="view-switcher">
+                            <button class="view-btn" data-view="day">Day</button>
+                            <button class="view-btn" data-view="week">Week</button>
+                            <button class="view-btn active" data-view="month">Month</button>
+                        </div>
+                    </div>
+                    <div id="calendar"></div>
+                </div>
+            </div>
+            
+            <!-- Tasks View -->
+            <div id="tasksView" class="view-section d-none">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Tasks</h1>
+                        <p class="page-subtitle">Manage your tasks and deadlines</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openTaskModal()">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="totalTasks">0</h4>
+                            <p>Total Tasks</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="highPriorityTasks">0</h4>
+                            <p>High Priority</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="completedTasks">0</h4>
+                            <p>Completed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="pendingTasks">0</h4>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">All Tasks</h3>
+                        <select class="form-select" id="taskFilter" onchange="filterTasks()" style="width: auto;">
+                            <option value="all">All Tasks</option>
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <div class="task-list" id="taskList">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list empty-state-icon"></i>
+                                <h4>No tasks yet</h4>
+                                <p>Add your first task to get started with scheduling</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Schedule View -->
+            <div id="scheduleView" class="view-section d-none">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">My Schedule</h1>
+                        <p class="page-subtitle">Manage your academic schedule (time AI cannot use)</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openScheduleModal()">
+                        <i class="fas fa-plus"></i> Add Time Slot
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Weekly Schedule</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-list" id="scheduleList">
+                            <div class="empty-state">
+                                <i class="fas fa-clock empty-state-icon"></i>
+                                <h4>No schedule set</h4>
+                                <p>Add your class times and other commitments so AI knows when you're busy</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Add</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="quickScheduleForm" class="d-flex gap-2 align-items-center">
+                            <select class="form-select" id="quickDayOfWeek" style="width: 150px;">
+                                <option value="0">Sunday</option>
+                                <option value="1" selected>Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                            </select>
+                            <input type="time" class="form-control" id="quickStartTime" value="09:00" style="width: 120px;">
+                            <span>to</span>
+                            <input type="time" class="form-control" id="quickEndTime" value="10:00" style="width: 120px;">
+                            <input type="text" class="form-control" id="quickTitle" placeholder="Activity name" style="flex: 1;">
+                            <button type="submit" class="btn btn-primary">Add</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Scheduler View -->
+            <div id="aiView" class="view-section d-none">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">AI Scheduler</h1>
+                        <p class="page-subtitle">Let AI generate your study blocks</p>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="aiProfile">Seamless</h4>
+                            <p>Current Profile</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h4 id="studyBlocksCount">0</h4>
+                            <p>Study Blocks</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">How AI Scheduling Works</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="settings-section">
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>AI Priority Calculation</strong>
+                                    <small>The AI analyzes your task due dates and complexity to assign priority</small>
+                                </div>
+                                <div class="setting-control">
+                                    <span class="text-muted">Automatic</span>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>Date-Based Priority</strong>
+                                    <small>Tasks due sooner get higher priority</small>
+                                </div>
+                                <div class="setting-control">
+                                    <span class="text-muted">Auto</span>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>Complexity Analysis</strong>
+                                    <small>AI checks word count and activity type for complexity</small>
+                                </div>
+                                <div class="setting-control">
+                                    <span class="text-muted">Auto</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Generate Study Blocks</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2">Click the button below to let AI generate study blocks based on your tasks and preferences.</p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" onclick="generateStudyBlocks()">
+                                <i class="fas fa-magic"></i> Generate Study Blocks
+                            </button>
+                            <button class="btn btn-secondary" onclick="regenerateStudyBlocks()">
+                                <i class="fas fa-redo"></i> Regenerate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings View -->
+            <div id="settingsView" class="view-section d-none">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Settings</h1>
+                        <p class="page-subtitle">Customize your preferences</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Study Block Profile</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="settings-section">
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>Study Profile</strong>
+                                    <small>Choose how AI schedules your study blocks</small>
+                                </div>
+                                <div class="setting-control">
+                                    <select class="form-select" id="studyProfile" onchange="updatePreference('study_profile', this.value)">
+                                        <option value="seamless">Seamless</option>
+                                        <option value="early_crammer">Early Crammer</option>
+                                        <option value="late_crammer">Late Crammer</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3">
+                            <strong><i class="fas fa-info-circle"></i> Profile Descriptions:</strong>
+                            <ul class="mt-2 mb-0">
+                                <li><strong>Early Crammer:</strong> Schedules study blocks as early as possible to finish tasks early</li>
+                                <li><strong>Seamless:</strong> Creates balanced study blocks with decent allowance between activities</li>
+                                <li><strong>Late Crammer:</strong> Schedules study blocks as late as possible (up to a few days before deadline)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Time Settings</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="settings-section">
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>Earliest Study Time</strong>
+                                    <small>When the calendar will start allowing study blocks</small>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="time" class="form-control" id="earliestStart" value="08:00" onchange="updatePreference('earliest_start', this.value)">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>Latest Study Time</strong>
+                                    <small>When the calendar will stop allowing study blocks</small>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="time" class="form-control" id="latestEnd" value="22:00" onchange="updatePreference('latest_end', this.value)">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <strong>Study Block Duration</strong>
+                                    <small>Default duration for each study block</small>
+                                </div>
+                                <div class="setting-control">
+                                    <select class="form-select" id="blockDuration" onchange="updatePreference('block_duration', this.value)">
+                                        <option value="15">15 minutes</option>
+                                        <option value="30" selected>30 minutes</option>
+                                        <option value="45">45 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="90">1.5 hours</option>
+                                        <option value="120">2 hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title">Account</h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-danger" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="taskModalTitle">Add New Task</h3>
+                <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <input type="hidden" id="taskId">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title</label>
+                        <input type="text" id="taskTitle" class="form-control" placeholder="e.g., Math Homework Chapter 5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description (optional)</label>
+                        <textarea id="taskDescription" class="form-control" rows="3" placeholder="Add details about the task..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-control" required>
+                    </div>
+                    <div class="form-group" id="priorityGroup" style="display: none;">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                        <small class="text-muted">You can manually override the AI-assigned priority</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Schedule Modal -->
+    <div class="modal-overlay" id="scheduleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Time Slot</h3>
+                <button class="modal-close" onclick="closeScheduleModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm">
+                    <input type="hidden" id="scheduleId">
+                    <div class="form-group">
+                        <label for="scheduleDay">Day of Week</label>
+                        <select id="scheduleDay" class="form-select">
+                            <option value="0">Sunday</option>
+                            <option value="1">Monday</option>
+                            <option value="2">Tuesday</option>
+                            <option value="3">Wednesday</option>
+                            <option value="4">Thursday</option>
+                            <option value="5">Friday</option>
+                            <option value="6">Saturday</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Range</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="time" id="scheduleStart" class="form-control" required>
+                            <span>to</span>
+                            <input type="time" id="scheduleEnd" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="scheduleTitle">Activity Name</label>
+                        <input type="text" id="scheduleTitle" class="form-control" placeholder="e.g., Math 101, Basketball Practice">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSchedule()">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tour Overlay -->
+    <div class="tour-overlay" id="tourOverlay">
+        <div class="tour-card">
+            <div class="tour-icon" id="tourIcon">🎓</div>
+            <h2 class="tour-title" id="tourTitle">Welcome to DailyBrew!</h2>
+            <p class="tour-text" id="tourText">Your AI-powered study scheduler that helps you manage tasks and create effective study plans.</p>
+            <div class="tour-progress">
+                <div class="tour-dot active" data-step="1"></div>
+                <div class="tour-dot" data-step="2"></div>
+                <div class="tour-dot" data-step="3"></div>
+                <div class="tour-dot" data-step="4"></div>
+            </div>
+            <button class="btn btn-primary" id="tourNextBtn" onclick="nextTourStep()">Get Started</button>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.10.2/dist/fullcalendar.min.js"></script>
+    
+    <script>
+        // Global variables
+        let calendar;
+        let currentUser = null;
+        let tasks = [];
+        let schedules = [];
+        let studyBlocks = [];
+        let preferences = {};
+        let tourStep = 1;
+        
+        // Initialize app
+        $(document).ready(function() {
+            initApp();
+        });
+        
+        async function initApp() {
+            try {
+                // Check authentication
+                const authResponse = await fetch('php/auth.php?action=check');
+                const authResult = await authResponse.json();
+                
+                if (!authResult.data.authenticated) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                // Get user info
+                const userResponse = await fetch('php/auth.php?action=getUser');
+                const userResult = await userResponse.json();
+                
+                if (userResult.error) {
+                    showToast('Failed to load user data', 'error');
+                    return;
+                }
+                
+                currentUser = userResult.data.user;
+                preferences = userResult.data.preferences || {};
+                
+                // Update UI
+                updateUserUI();
+                loadPreferences();
+                
+                // Show tour if first time
+                if (!preferences.has_seen_tour || preferences.has_seen_tour == 0) {
+                    showTour();
+                }
+                
+                // Initialize calendar
+                initCalendar();
+                
+                // Load data
+                await Promise.all([
+                    loadTasks(),
+                    loadSchedules(),
+                    loadStudyBlocks()
+                ]);
+                
+                // Setup event listeners
+                setupEventListeners();
+                
+            } catch (error) {
+                console.error('Init error:', error);
+                showToast('Failed to initialize app', 'error');
+            }
+        }
+        
+        function updateUserUI() {
+            if (currentUser) {
+                const initials = currentUser.first_name.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = initials;
+                document.getElementById('userName').textContent = currentUser.first_name + ' ' + (currentUser.last_name || '');
+            }
+        }
+        
+        function loadPreferences() {
+            if (preferences) {
+                document.getElementById('studyProfile').value = preferences.study_profile || 'seamless';
+                document.getElementById('earliestStart').value = preferences.earliest_start || '08:00';
+                document.getElementById('latestEnd').value = preferences.latest_end || '22:00';
+                document.getElementById('blockDuration').value = preferences.block_duration || 30;
+                document.getElementById('aiProfile').textContent = formatProfileName(preferences.study_profile || 'seamless');
+            }
+        }
+        
+        function formatProfileName(profile) {
+            return profile.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+        
+        // Calendar initialization
+        function initCalendar() {
+            $('#calendar').fullCalendar({
+                header: false,
+                defaultView: 'month',
+                editable: true,
+                eventLimit: true,
+                events: function(start, end, timezone, callback) {
+                    loadCalendarEvents(start, end).then(events => callback(events));
+                },
+                eventDrop: function(event, delta, revertFunc) {
+                    if (event.extendedType === 'study_block') {
+                        moveStudyBlock(event.id, event.start.format(), event.end.format(), revertFunc);
+                    }
+                },
+                eventClick: function(event) {
+                    if (event.extendedType === 'study_block') {
+                        showStudyBlockInfo(event);
+                    }
+                },
+                viewRender: function(view) {
+                    document.getElementById('calendarTitle').textContent = view.title;
+                }
+            });
+            
+            calendar = $('#calendar').fullCalendar('getCalendar');
+        }
+        
+        async function loadCalendarEvents(start, end) {
+            const events = [];
+            
+            try {
+                // Load academic schedules
+                const schedResponse = await fetch(`php/schedule.php?action=getWeek&start=${start.format()}&end=${end.format()}`);
+                const schedResult = await schedResponse.json();
+                if (!schedResult.error) {
+                    events.push(...schedResult.data);
+                }
+                
+                // Load study blocks
+                const blocksResponse = await fetch(`php/ai.php?action=getBlocks&start=${start.format()}&end=${end.format()}`);
+                const blocksResult = await blocksResponse.json();
+                if (!blocksResult.error) {
+                    events.push(...blocksResult.data);
+                }
+                
+            } catch (error) {
+                console.error('Error loading calendar events:', error);
+            }
+            
+            return events;
+        }
+        
+        // Data loading functions
+        async function loadTasks() {
+            try {
+                const response = await fetch('php/tasks.php?action=read');
+                const result = await response.json();
+                
+                if (!result.error) {
+                    tasks = result.data;
+                    renderTaskList();
+                    updateTaskStats();
+                }
+            } catch (error) {
+                console.error('Error loading tasks:', error);
+            }
+        }
+        
+        async function loadSchedules() {
+            try {
+                const response = await fetch('php/schedule.php?action=read');
+                const result = await response.json();
+                
+                if (!result.error) {
+                    schedules = result.data;
+                    renderScheduleList();
+                }
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+            }
+        }
+        
+        async function loadStudyBlocks() {
+            try {
+                const response = await fetch('php/ai.php?action=getBlocks');
+                const result = await response.json();
+                
+                if (!result.error) {
+                    studyBlocks = result.data;
+                    document.getElementById('studyBlocksCount').textContent = studyBlocks.length;
+                }
+            } catch (error) {
+                console.error('Error loading study blocks:', error);
+            }
+        }
+        
+        // Render functions
+        function renderTaskList() {
+            const container = document.getElementById('taskList');
+            const filter = document.getElementById('taskFilter').value;
+            
+            let filteredTasks = tasks;
+            if (filter !== 'all') {
+                filteredTasks = tasks.filter(t => t.status === filter);
+            }
+            
+            if (filteredTasks.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list empty-state-icon"></i>
+                        <h4>No tasks found</h4>
+                        <p>${filter === 'all' ? 'Add your first task to get started' : 'No tasks with this status'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredTasks.map(task => `
+                <div class="task-item" data-id="${task.id}">
+                    <div class="task-priority ${task.priority}"></div>
+                    <div class="task-content">
+                        <div class="task-title">${escapeHtml(task.title)}</div>
+                        <div class="task-meta">
+                            <span><i class="fas fa-calendar"></i> Due: ${task.due_date}</span>
+                            <span><i class="fas fa-flag"></i> ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+                            <span><i class="fas fa-layer-group"></i> Complexity: ${task.complexity}/5</span>
+                        </div>
+                    </div>
+                    <div class="task-actions">
+                        <button onclick="editTask(${task.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button onclick="toggleTaskStatus(${task.id})" title="Toggle Status"><i class="fas fa-check"></i></button>
+                        <button class="delete" onclick="deleteTask(${task.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateTaskStats() {
+            document.getElementById('totalTasks').textContent = tasks.length;
+            document.getElementById('highPriorityTasks').textContent = tasks.filter(t => t.priority === 'high').length;
+            document.getElementById('completedTasks').textContent = tasks.filter(t => t.status === 'completed').length;
+            document.getElementById('pendingTasks').textContent = tasks.filter(t => t.status !== 'completed').length;
+        }
+        
+        function renderScheduleList() {
+            const container = document.getElementById('scheduleList');
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            if (schedules.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clock empty-state-icon"></i>
+                        <h4>No schedule set</h4>
+                        <p>Add your class times and other commitments so AI knows when you're busy</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = schedules.map(sched => `
+                <div class="schedule-item" data-id="${sched.id}">
+                    <span class="schedule-day">${days[sched.day_of_week]}</span>
+                    <span class="schedule-time">${sched.start_time} - ${sched.end_time}</span>
+                    <span class="schedule-title">${escapeHtml(sched.title || 'Busy')}</span>
+                    <button class="btn btn-sm btn-danger" onclick="deleteSchedule(${sched.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        // Navigation
+        function setupEventListeners() {
+            // Nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const view = this.dataset.view;
+                    switchView(view);
+                    
+                    // Update active state
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // View switcher
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const view = this.dataset.view;
+                    calendar.fullCalendar('changeView', view);
+                    
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Quick schedule form
+            document.getElementById('quickScheduleForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await quickAddSchedule();
+            });
+        }
+        
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('d-none'));
+            document.getElementById(viewName + 'View').classList.remove('d-none');
+            
+            if (viewName === 'calendar') {
+                calendar.fullCalendar('render');
+            }
+        }
+        
+        // Task functions
+        function openTaskModal(taskId = null) {
+            const modal = document.getElementById('taskModal');
+            const title = document.getElementById('taskModalTitle');
+            const priorityGroup = document.getElementById('priorityGroup');
+            
+            if (taskId) {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    title.textContent = 'Edit Task';
+                    document.getElementById('taskId').value = task.id;
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskDescription').value = task.description || '';
+                    document.getElementById('taskDueDate').value = task.due_date;
+                    document.getElementById('taskPriority').value = task.priority;
+                    priorityGroup.style.display = 'block';
+                }
+            } else {
+                title.textContent = 'Add New Task';
+                document.getElementById('taskForm').reset();
+                document.getElementById('taskId').value = '';
+                priorityGroup.style.display = 'none';
+                
+                // Set minimum date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('taskDueDate').min = today;
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeTaskModal() {
+            document.getElementById('taskModal').classList.remove('active');
+        }
+        
+        async function saveTask() {
+            const taskId = document.getElementById('taskId').value;
+            const title = document.getElementById('taskTitle').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const dueDate = document.getElementById('taskDueDate').value;
+            const priority = document.getElementById('taskPriority').value;
+            
+            if (!title || !dueDate) {
+                showToast('Please fill in required fields', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const action = taskId ? 'update' : 'create';
+                const body = {
+                    id: taskId ? parseInt(taskId) : null,
+                    title,
+                    description,
+                    due_date: dueDate
+                };
+                
+                if (taskId) {
+                    body.priority = priority;
+                }
+                
+                const response = await fetch(`php/tasks.php?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    showToast(result.message, 'error');
+                } else {
+                    showToast(taskId ? 'Task updated!' : 'Task created!', 'success');
+                    closeTaskModal();
+                    await loadTasks();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            } catch (error) {
+                showToast('Failed to save task', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function editTask(taskId) {
+            openTaskModal(taskId);
+        }
+        
+        async function deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('php/tasks.php?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: taskId })
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    showToast(result.message, 'error');
+                } else {
+                    showToast('Task deleted', 'success');
+                    await loadTasks();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            } catch (error) {
+                showToast('Failed to delete task', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function toggleTaskStatus(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+            
+            const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+            
+            try {
+                const response = await fetch('php/tasks.php?action=update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: taskId, status: newStatus })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.error) {
+                    showToast(`Task marked as ${newStatus}`, 'success');
+                    await loadTasks();
+                }
+            } catch (error) {
+                showToast('Failed to update task', 'error');
+            }
+        }
+        
+        function filterTasks() {
+            renderTaskList();
+        }
+        
+        // Schedule functions
+        function openScheduleModal(scheduleId = null) {
+            const modal = document.getElementById('scheduleModal');
+            
+            if (scheduleId) {
+                const sched = schedules.find(s => s.id === scheduleId);
+                if (sched) {
+                    document.getElementById('scheduleId').value = sched.id;
+                    document.getElementById('scheduleDay').value = sched.day_of_week;
+                    document.getElementById('scheduleStart').value = sched.start_time;
+                    document.getElementById('scheduleEnd').value = sched.end_time;
+                    document.getElementById('scheduleTitle').value = sched.title || '';
+                }
+            } else {
+                document.getElementById('scheduleForm').reset();
+                document.getElementById('scheduleId').value = '';
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').classList.remove('active');
+        }
+        
+        async function saveSchedule() {
+            const scheduleId = document.getElementById('scheduleId').value;
+            const dayOfWeek = parseInt(document.getElementById('scheduleDay').value);
+            const startTime = document.getElementById('scheduleStart').value;
+            const endTime = document.getElementById('scheduleEnd').value;
+            const title = document.getElementById('scheduleTitle').value.trim();
+            
+            if (!startTime || !endTime) {
+                showToast('Please fill in time fields', 'warning');
+                return;
+            }
+            
+            if (startTime >= endTime) {
+                showToast('End time must be after start time', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const action = scheduleId ? 'update' : 'create';
+                const body = {
+                    day_of_week: dayOfWeek,
+                    start_time: startTime,
+                    end_time: endTime,
+                    title: title || 'Busy'
+                };
+                
+                if (scheduleId) {
+                    body.id = parseInt(scheduleId);
+                }
+                
+                const response = await fetch(`php/schedule.php?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    showToast(result.message, 'error');
+                } else {
+                    showToast('Schedule saved!', 'success');
+                    closeScheduleModal();
+                    await loadSchedules();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            } catch (error) {
+                showToast('Failed to save schedule', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function quickAddSchedule() {
+            const dayOfWeek = parseInt(document.getElementById('quickDayOfWeek').value);
+            const startTime = document.getElementById('quickStartTime').value;
+            const endTime = document.getElementById('quickEndTime').value;
+            const title = document.getElementById('quickTitle').value.trim() || 'Busy';
+            
+            if (!startTime || !endTime || startTime >= endTime) {
+                showToast('Invalid time range', 'warning');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('php/schedule.php?action=create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ day_of_week: dayOfWeek, start_time: startTime, end_time: endTime, title })
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    showToast(result.message, 'error');
+                } else {
+                    showToast('Schedule added!', 'success');
+                    document.getElementById('quickTitle').value = '';
+                    await loadSchedules();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            } catch (error) {
+                showToast('Failed to add schedule', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function deleteSchedule(scheduleId) {
+            if (!confirm('Delete this time slot?')) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('php/schedule.php?action=delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: scheduleId })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.error) {
+                    showToast('Schedule deleted', 'success');
+                    await loadSchedules();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            } catch (error) {
+                showToast('Failed to delete schedule', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // AI Scheduler functions
+        async function generateStudyBlocks(regenerate = false) {
+            showLoading();
+            
+            try {
+                const response = await fetch('php/ai.php?action=generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ regenerate })
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    showToast(result.message, 'error');
+                } else {
+                    showToast(`Generated ${result.data.total_blocks} study blocks!`, 'success');
+                    await loadStudyBlocks();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            } catch (error) {
+                showToast('Failed to generate study blocks', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function regenerateStudyBlocks() {
+            if (confirm('This will delete existing AI-generated blocks and create new ones. Continue?')) {
+                generateStudyBlocks(true);
+            }
+        }
+        
+        async function moveStudyBlock(blockId, newStart, newEnd, revertFunc) {
+            try {
+                const response = await fetch('php/ai.php?action=moveBlock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: blockId, start: newStart, end: newEnd })
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    showToast(result.message, 'error');
+                    revertFunc();
+                } else {
+                    showToast('Study block moved!', 'success');
+                    await loadStudyBlocks();
+                }
+            } catch (error) {
+                showToast('Failed to move block', 'error');
+                revertFunc();
+            }
+        }
+        
+        function showStudyBlockInfo(event) {
+            alert(`Study Block: ${event.title}\nTime: ${event.start.format('MMM D, h:mm A')} - ${event.end.format('h:mm A')}`);
+        }
+        
+        // Preferences functions
+        async function updatePreference(key, value) {
+            try {
+                const response = await fetch('php/preferences.php?action=update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [key]: value })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.error) {
+                    preferences[key] = value;
+                    if (key === 'study_profile') {
+                        document.getElementById('aiProfile').textContent = formatProfileName(value);
+                    }
+                    showToast('Preferences saved!', 'success');
+                }
+            } catch (error) {
+                showToast('Failed to save preferences', 'error');
+            }
+        }
+        
+        // Tour functions
+        function showTour() {
+            document.getElementById('tourOverlay').classList.add('active');
+            tourStep = 1;
+            updateTourContent();
+        }
+        
+        function nextTourStep() {
+            tourStep++;
+            if (tourStep > 4) {
+                closeTour();
+            } else {
+                updateTourContent();
+            }
+        }
+        
+        function updateTourContent() {
+            const tourData = {
+                1: {
+                    icon: '🎓',
+                    title: 'Welcome to DailyBrew!',
+                    text: 'Your AI-powered study scheduler that helps you manage tasks and create effective study plans.'
+                },
+                2: {
+                    icon: '📝',
+                    title: 'Add Your Tasks',
+                    text: 'Create tasks with deadlines. The AI will analyze their priority based on due dates and complexity.'
+                },
+                3: {
+                    icon: '📅',
+                    title: 'Set Your Schedule',
+                    text: 'Add your classes and commitments so the AI knows when you\'re available for studying.'
+                },
+                4: {
+                    icon: '🤖',
+                    title: 'Let AI Help',
+                    text: 'Click "Generate Blocks" to let AI create study sessions based on your tasks and preferences!'
+                }
+            };
+            
+            const data = tourData[tourStep];
+            document.getElementById('tourIcon').textContent = data.icon;
+            document.getElementById('tourTitle').textContent = data.title;
+            document.getElementById('tourText').textContent = data.text;
+            document.getElementById('tourNextBtn').textContent = tourStep === 4 ? 'Get Started!' : 'Next';
+            
+            document.querySelectorAll('.tour-dot').forEach(dot => {
+                dot.classList.toggle('active', parseInt(dot.dataset.step) <= tourStep);
+            });
+        }
+        
+        async function closeTour() {
+            document.getElementById('tourOverlay').classList.remove('active');
+            
+            try {
+                await fetch('php/preferences.php?action=markTourSeen', { method: 'POST' });
+            } catch (error) {
+                console.error('Failed to mark tour as seen');
+            }
+        }
+        
+        // Auth functions
+        async function logout() {
+            if (!confirm('Are you sure you want to logout?')) return;
+            
+            try {
+                await fetch('php/auth.php?action=logout', { method: 'POST' });
+                window.location.href = 'index.html';
+            } catch (error) {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+        
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="toast-icon fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+
